@@ -1,0 +1,187 @@
+# PROJECT SPEC v2 — BUSINESS ENGLISH FOR PROPERTY INSURANCE (OFFLINE-FIRST PWA)
+
+This is the revised version of the original specification. Changes against v1 are marked **[v2]**.
+
+## 1. Role and objective
+
+Act as a senior full-stack developer, PWA architect, UX designer and evidence-informed ELT specialist.
+Build a complete, working, offline-first PWA that helps a Polish-speaking property insurance broker
+(corporate clients, international programmes) move from about CEFR A2 toward B2.
+
+Target situations: international corporate clients, insurers and underwriters, network brokers,
+loss adjusters and claims handlers, risk engineers.
+
+**[v2] Language variety:** British English and London-market conventions (programme, favour,
+"policy wording", "loss adjuster"). American variants may appear in usage notes.
+
+## 2. Non-negotiable requirements
+
+1. Works offline after the first successful load and precache.
+2. All essential content is bundled locally.
+3. No paid API, API key, external AI service, account or backend.
+4. Progress persists across restarts.
+5. Installable as a PWA on Android and iOS. **[v2]** iOS has no install prompt, so the app shows its own
+   "Add to Home Screen" instruction screen.
+6. Navigation, exercises, flashcards, statistics and PDF export work offline.
+7. Speech recognition is optional, never promised offline.
+8. Every module has a fallback when a browser API is missing.
+9. Deployable to GitHub Pages. **[v2]** Uses `HashRouter`, so refreshing a sub-page never returns 404.
+10. Repo contains working code, content, configuration and documentation.
+11. No TODO placeholders, empty screens or dead buttons in core features.
+12. No claims of real-device testing unless such tests were done.
+
+## 3. Delivery phases [v2]
+
+The work is split so content quality does not degrade while code is being written:
+
+- **Phase A — application:** architecture, content schema, SRS, all screens, PDF, backup, tests.
+- **Phase B — content:** delivered in batches against the fixed schema (cards in batches of ~30,
+  then lessons, dialogues, emails). Each batch is validated by the content test suite.
+
+Minimum content for v1 of the app: 150 flashcards, 12 lessons, 10 grammar topics,
+10 phone dialogues, 8 model emails, 10 speaking tasks.
+
+## 4. Stack
+
+React 18 + TypeScript (strict), Vite, vite-plugin-pwa (Workbox), Dexie (IndexedDB), jsPDF,
+native SVG for charts, Vitest. Content in typed TS modules. Lockfile included.
+
+## 5. Offline architecture
+
+- Precache app shell, bundles, fonts, icons, manifest and all content (content is compiled into the bundle).
+- **[v2] Update flow:** `registerType: "prompt"` — the user sees "New version available — reload".
+  No silent `skipWaiting`, so a half-updated app never runs.
+- Visible online/offline indicator.
+- **[v2] Persistence:** call `navigator.storage.persist()` on first run and show the result in Settings.
+- **[v2] TTS:** prefer an `en-GB` voice, let the user choose the voice and rate, and show a clear message when
+  no English voice is installed (common on Android without downloaded voices).
+- Vite `base` configurable through `BASE_PATH` env var (repo subpath or root domain).
+
+## 6. Data and backups
+
+- Dexie database for user data only: card states, review log, activity log, exercise results,
+  custom cards, favourites, email drafts, speaking transcripts, settings.
+- **[v2] Stable content IDs.** SRS state is keyed by card ID. Updating or extending content must never
+  reset progress. Content IDs are never reused or renumbered.
+- Versioned schema with migrations.
+- Export all data to JSON, import with validation (schema version, required tables, types),
+  export a progress summary (PDF).
+- **[v2] Backup reminder** on the dashboard when the last backup is older than 7 days.
+
+## 7. Methodology
+
+Spaced repetition, retrieval practice, contextual learning, short daily sessions.
+
+**[v2] SM-2 parameters:**
+- Grades: Again (0) / Hard (3) / Good (4) / Easy (5); ease factor floor 1.3; first intervals 1 and 6 days.
+- New cards per day: default 10 (configurable 0–30).
+- Card directions: EN→PL (recognition) and PL→EN (recall). Optional typed-answer mode for PL→EN.
+
+**[v2] Session composition (rule-based):**
+
+| Mode | Due reviews (max) | New cards | Contextual task |
+|---|---|---|---|
+| 10 min | 20 | 5 | none |
+| 15 min | 30 | 8 | 1 (lesson, dialogue, email or grammar — weakest area first) |
+| 20 min | 40 | 10 | 2 |
+
+**[v2] Placement check** on first run (12 questions) sets the starting CEFR band for new cards.
+
+Adaptation is rule-based: cards with lapses and topics with low exercise scores are prioritised.
+The UI says explicitly that no AI is involved.
+
+## 8. Vocabulary
+
+At least 150 cards across A2/B1/B2. Each card: `id`, `en`, `pl`, `def`, optional `plNote`,
+`level`, `topic`, `examples[{en, pl}]`, `collocations[]`, `note` (usage / common Polish mistakes),
+optional `audio` path, **[v2]** optional `needsReview` flag.
+
+**[v2]** Audio is generated by TTS at runtime; the `audio` field is only an optional path to a local file.
+
+**[v2] Terminology safety:** concepts that depend on jurisdiction (admitted/non-admitted, fronting,
+DIC/DIL, co-insurance clauses) are explained generically with a note that local rules vary. Terms the
+author is not fully confident about are marked `needsReview: true` and listed in Settings for
+the learner to verify.
+
+Users can add, edit, favourite, export and import custom cards.
+
+## 9. Lessons
+
+At least 12 lessons, A2→B2: objectives, vocabulary links, short Polish explanation, examples,
+a business situation, comprehension questions, active recall exercises, answer key.
+
+## 10. Grammar
+
+Short Polish explanations, insurance-context examples, typical Polish mistakes (articles, prepositions,
+word order, tenses, false friends), exercises with immediate feedback.
+
+## 11. Phone dialogues
+
+At least 10 dialogues covering: introduction, FNOL, coverage and deductibles, exclusions,
+upset client, inspection, missing documents, renewal / premium increase, underwriter clarification,
+international programme. Each: title, level, roles, lines with Polish translation, key vocabulary,
+useful expressions, comprehension questions.
+
+Practice modes: read, listen (TTS, transcript hidden), reconstruct (word order), choose the best
+response, speak (record, then compare).
+
+## 12. Emails
+
+At least 8 model emails: structure guidance, task brief, model answer, self-review checklist.
+Drafts are saved locally and exported to PDF.
+
+## 13. Speaking
+
+- MediaRecorder recording, kept in memory only for the session (never uploaded).
+- Web Speech recognition only where available; otherwise manual transcript.
+- **[v2] Deterministic feedback with synonyms:** each required element has a list of accepted
+  alternatives, so valid paraphrases are not penalised. Feedback lists what is present and what is missing,
+  plus the model answer.
+- **[v2]** No "corrections" are claimed: the app shows gaps against the model, not grammar corrections.
+
+## 14. Listening
+
+TTS-based, transcript hidden by default, replay and slower speed, comprehension questions.
+
+## 15. Dashboard and progress
+
+Due cards, streak, progress by topic and level, recent activity, suggested next activity,
+backup status.
+
+**[v2] Level estimate formula** (labelled "internal estimate, not a CEFR certificate"):
+for each level, score = 0.4 × share of that level's cards in review state with interval ≥ 7 days
++ 0.3 × average lesson/grammar score at that level + 0.3 × average dialogue/email/speaking score at that level.
+A level is "reached" at ≥ 0.7.
+
+## 16. UX
+
+Polish interface by default, option to show explanations in English. Mobile-first, large touch targets,
+high contrast, dark mode, accessible forms, helpful empty states.
+
+## 17. PDF
+
+Client-side jsPDF. **[v2]** Embedded DejaVu Sans subset (Latin + Latin Extended-A) for Polish diacritics,
+cached by the service worker. Exports: vocabulary list, dialogue, email draft with model, speaking transcript
+with model answer, progress summary.
+
+## 18. Content quality
+
+Professional, level-appropriate, fictional names and companies, no invented legal rules,
+natural international business English rather than calques.
+
+## 19. Testing
+
+Automated (Vitest): SRS scheduling, persistence, backup export/import round-trip, progress and level
+calculation, PDF generation, **[v2]** content integrity (unique IDs, required fields, minimum counts).
+
+**[v2] One E2E test (Playwright)** is part of Definition of Done: load the built app, go offline,
+reload, review a flashcard, confirm progress is kept.
+
+Manual checklist in README.
+
+## 20. Definition of Done
+
+Build, typecheck and tests pass; offline E2E passes; all navigation leads to working screens;
+content minimums met; flashcards reschedule; progress survives restarts; PDF export works offline;
+backup round-trip works; manifest and service worker valid; browser limitations stated honestly;
+no external API needed; README covers setup and deployment.
