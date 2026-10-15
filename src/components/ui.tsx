@@ -344,3 +344,46 @@ export function useToast(): [ReactNode, (msg: string) => void] {
   ) : null;
   return [node, setMsg];
 }
+
+/** Two-step destructive button (no browser confirm(), which some embedded viewers block). */
+export function ConfirmButton({
+  label,
+  question,
+  confirmLabel = 'Tak, usuń',
+  onConfirm,
+  className = 'btn danger',
+}: {
+  label: string;
+  question: string;
+  confirmLabel?: string;
+  onConfirm: () => void | Promise<void>;
+  className?: string;
+}) {
+  const [asking, setAsking] = useState(false);
+  if (!asking)
+    return (
+      <button type="button" className={className} onClick={() => setAsking(true)}>
+        {label}
+      </button>
+    );
+  return (
+    <div className="notice bad" role="alertdialog" aria-label={question}>
+      <p style={{ marginBottom: 8 }}>{question}</p>
+      <div className="row">
+        <button
+          type="button"
+          className="btn danger sm"
+          onClick={async () => {
+            await onConfirm();
+            setAsking(false);
+          }}
+        >
+          {confirmLabel}
+        </button>
+        <button type="button" className="btn ghost sm" onClick={() => setAsking(false)}>
+          Anuluj
+        </button>
+      </div>
+    </div>
+  );
+}

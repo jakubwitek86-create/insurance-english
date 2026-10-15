@@ -8,7 +8,7 @@ import { normalize } from '../lib/feedback';
 import { vocabularyPdf, pdfFilename } from '../lib/exports';
 import { downloadJson, validateCustomCards, BACKUP_APP_ID } from '../db/backup';
 import { CardBack } from '../components/Review';
-import { Empty, LevelTag, PageHeader, SpeakBtn, useToast } from '../components/ui';
+import { ConfirmButton, Empty, LevelTag, PageHeader, SpeakBtn, useToast } from '../components/ui';
 
 const EMPTY_FORM = { en: '', pl: '', def: '', example: '', examplePl: '', note: '', level: 'B1' as Level };
 
@@ -259,17 +259,15 @@ export function VocabularyPage() {
                     <button className="btn secondary sm" onClick={() => setEditing(c)}>
                       Edytuj
                     </button>
-                    <button
+                    <ConfirmButton
                       className="btn ghost sm"
-                      onClick={async () => {
-                        if (confirm('Usunąć tę fiszkę i jej historię powtórek?')) {
-                          await db.customCards.delete(c.id);
-                          await db.cardStates.delete(c.id);
-                        }
+                      label="Usuń"
+                      question="Usunąć tę fiszkę i jej historię powtórek?"
+                      onConfirm={async () => {
+                        await db.customCards.delete(c.id);
+                        await db.cardStates.delete(c.id);
                       }}
-                    >
-                      Usuń
-                    </button>
+                    />
                   </>
                 )}
               </div>

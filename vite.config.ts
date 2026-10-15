@@ -10,6 +10,8 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      // ARTIFACT=1 builds a preview without the service worker (for embedded hosts that do not allow one).
+      disable: process.env.ARTIFACT === '1',
       registerType: 'prompt',
       injectRegister: false,
       includeAssets: ['favicon.png', 'apple-touch-icon.png', 'fonts/*.ttf', 'icons/*.png'],

@@ -6,7 +6,7 @@ import { setSetting, useSettings, type Direction } from '../lib/settings';
 import { englishVoices, getRecognition, loadVoices, recorderSupported, speak, ttsSupported } from '../lib/tts';
 import { builtInCards, CONTENT_VERSION } from '../content';
 import { LEVELS, type Level } from '../types';
-import { PageHeader, useToast } from '../components/ui';
+import { ConfirmButton, PageHeader, useToast } from '../components/ui';
 
 function Capabilities() {
   const [persisted, setPersisted] = useState<boolean | null>(null);
@@ -86,7 +86,6 @@ export function SettingsPage() {
   };
 
   const clearAll = async () => {
-    if (!confirm('Usunąć WSZYSTKIE postępy, szkice i własne fiszki z tego urządzenia? Tego nie można cofnąć.')) return;
     await db.transaction('rw', USER_TABLES.map((t) => db.table(t)), async () => {
       for (const t of USER_TABLES) await db.table(t).clear();
     });
@@ -264,9 +263,11 @@ export function SettingsPage() {
         </Link>
       </div>
 
-      <button className="btn danger" onClick={clearAll}>
-        Usuń wszystkie dane
-      </button>
+      <ConfirmButton
+        label="Usuń wszystkie dane"
+        question="Usunąć WSZYSTKIE postępy, szkice i własne fiszki z tego urządzenia? Tego nie można cofnąć."
+        onConfirm={clearAll}
+      />
       {toast}
     </div>
   );
