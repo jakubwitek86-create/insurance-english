@@ -40,8 +40,8 @@ E2E pobiera przeglądarkę przez `npx playwright install chromium`. Jeśli masz 
 ## Wdrożenie na GitHub Pages
 
 1. Utwórz repozytorium na GitHubie i wypchnij kod do gałęzi `main`.
-2. W repozytorium: **Settings → Pages → Source: GitHub Actions**.
-3. Workflow `.github/workflows/deploy.yml` przy każdym pushu uruchamia testy, buduje aplikację i publikuje `dist/`.
+2. W repozytorium: **Settings → Pages → Deploy from a branch → `gh-pages` / root** (GitHub zwykle włącza to sam po pierwszym pushu gałęzi `gh-pages`).
+3. Workflow `.github/workflows/deploy.yml` przy każdym pushu do `main` uruchamia testy, buduje aplikację i nadpisuje gałąź `gh-pages`.
 4. Adres: `https://<użytkownik>.github.io/<repozytorium>/`.
 
 Ścieżka bazowa: domyślnie `base: './'` (ścieżki względne), więc ten sam build działa i w podkatalogu repozytorium, i w domenie głównej. Aplikacja używa `HashRouter` (`#/lessons`), dlatego odświeżenie podstrony na GitHub Pages nie daje błędu 404. Jeśli wolisz ścieżkę absolutną, ustaw `BASE_PATH=/nazwa-repo/ npm run build`.
